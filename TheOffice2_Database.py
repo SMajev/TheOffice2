@@ -88,103 +88,97 @@ class Database:
         self._add_object(new_employe)
 
 
-    def add_department(self, dep_name):
+    def add_department(self, dep_name: str):
         new_department = self.Departments(dep_name=dep_name)
         self._add_object(new_department)
 
 
-    def add_title(self, title_name, department_id):
+    def add_title(self, title_name: str, department_id: int):
         new_title = self.Titles(title_name=title_name, department_id=department_id)
         self._add_object(new_title)
 
 
 
 
-    def edit_emp_name(self, emp_id, new_name):
+    def edit_emp_name(self, emp_id: int, new_name: str):
         with self.session.begin():
             employe = self._search_by_id(emp_id)
             employe.emp_name = new_name
 
 
-    def edit_emp_surname(self, emp_id, new_surname):
+    def edit_emp_surname(self, emp_id: int, new_surname: str):
         with self.session.begin():
             employe = self._search_by_id(emp_id)
             employe.emp_surname = new_surname
 
 
-    def edit_emp_pesel(self, emp_id, new_pesel):
+    def edit_emp_pesel(self, emp_id:int, new_pesel: str):
         with self.session.begin():
             employe = self._search_by_id(emp_id)
             employe.pesel = new_pesel
 
 
-    def edit_emp_pesel(self, emp_id, new_pesel):
-        with self.session.begin():
-            employe = self._search_by_id(emp_id)
-            employe.pesel = new_pesel
-
-
-    def edit_emp_birth_date(self, emp_id, new_birth_date):
+    def edit_emp_birth_date(self, emp_id: int, new_birth_date: str):
         with self.session.begin():
             employe = self._search_by_id(emp_id)
             employe.birth_date = new_birth_date
 
 
-    def edit_emp_hire_date(self, emp_id, new_hire_date):
+    def edit_emp_hire_date(self, emp_id: int, new_hire_date: str):
         with self.session.begin():
             employe = self._search_by_id(emp_id)
             employe.hire_date = new_hire_date
 
 
-    def edit_emp_department_id(self, emp_id, new_department_id):
+    def edit_emp_department_id(self, emp_id: int, new_department_id: int):
         with self.session.begin():
             employe = self._search_by_id(emp_id)
             employe.department_id = new_department_id
 
 
-    def edit_emp_title_id(self, emp_id, new_title_id):
+    def edit_emp_title_id(self, emp_id: int, new_title_id: int):
         with self.session.begin():
             employe = self._search_by_id(emp_id)
             employe.department_id = new_title_id
 
 
-    def edit_phone_number(self, emp_id, new_phone_number):
+    def edit_phone_number(self, emp_id: int, new_phone_number: str):
         with self.session.begin():
             contact = self._search_contact_by_emp_id(emp_id)
             contact.phone_number = new_phone_number
 
 
-    def edit_mail(self, emp_id, new_email):
+    def edit_mail(self, emp_id: int, new_email: str):
         with self.session.begin():
             contact = self._search_contact_by_emp_id(emp_id)
             contact.email = new_email
 
 
-    def edit_street_and_no(self, emp_id, new_adress):
+    def edit_street_and_no(self, emp_id: int, new_adress: str):
         with self.session.begin():
             contact = self._search_contact_by_emp_id(emp_id)
             contact.street_and_no = new_adress
 
 
-    def edit_flat_number(self, emp_id, new_flat_number):
+    def edit_flat_number(self, emp_id: int, new_flat_number: str):
         with self.session.begin():
             contact = self._search_contact_by_emp_id(emp_id)
             contact.flat_number = new_flat_number
 
 
-    def edit_dept_name(self, dep_id, new_dept_name):
+    def edit_dept_name(self, dep_id: int, new_dept_name: str):
         with self.session.begin():
             dept = self._search_dept_by_id(dep_id)
             dept.dep_name = new_dept_name
 
 
-    def edit_title_name(self, title_id, new_title_name):
+    def edit_title_name(self, title_id: int, new_title_name: str):
         with self.session.begin():
             title = self._search_title_by_id(title_id)
             title.name = new_title_name
 
 
-    def edit_title_dept(self, title_id, new_dept_id):
+    def edit_title_dept(self, title_id: int, new_dept_id: int):
         with self.session.begin():
             title = self._search_title_by_id(title_id)
             title.department_id = new_dept_id
@@ -203,24 +197,24 @@ class Database:
         self._add_object(new_contact)
         return new_contact.contact_id
 
-    def _search_by_id(self, id_to_find):        
+    def _search_by_id(self, id_to_find: int):        
         employe = (self.session.query(self.Employees)
                   .filter(self.Employees.emp_id == id_to_find).first())
         return employe
 
-    def _search_contact_by_emp_id(self, id_to_find):    
+    def _search_contact_by_emp_id(self, id_to_find: int()):    
         contact_id = self._search_by_id(id_to_find).contact_id
         print(contact_id)
         contact = (self.session.query(self.Contacts)
                   .filter(self.Contacts.contact_id == contact_id).first())
         return contact
 
-    def _search_dept_by_id(self, id_to_find):
+    def _search_dept_by_id(self, id_to_find: int):
         dept = (self.session.query(self.Departments)
                .filter(self.Departments.department_id == id_to_find).first())
         return dept
 
-    def _search_title_by_id(self, id_to_find):
+    def _search_title_by_id(self, id_to_find: int):
         title = (self.session.query(self.Titles)
                .filter(self.Title.title_id == id_to_find).first())
         return title
