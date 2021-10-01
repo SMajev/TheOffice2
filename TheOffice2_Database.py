@@ -202,7 +202,7 @@ class Database:
                   .filter(self.Employees.emp_id == id_to_find).first())
         return employe
 
-    def _search_contact_by_emp_id(self, id_to_find: int()):    
+    def _search_contact_by_emp_id(self, id_to_find: int):    
         contact_id = self._search_by_id(id_to_find).contact_id
         print(contact_id)
         contact = (self.session.query(self.Contacts)
