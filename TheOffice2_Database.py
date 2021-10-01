@@ -98,6 +98,8 @@ class Database:
         self._add_object(new_title)
 
 
+
+
     def edit_emp_name(self, emp_id, new_name):
         with self.session.begin():
             employe = self._search_by_id(emp_id)
@@ -151,35 +153,42 @@ class Database:
             contact = self._search_contact_by_emp_id(emp_id)
             contact.phone_number = new_phone_number
 
+
     def edit_mail(self, emp_id, new_email):
         with self.session.begin():
             contact = self._search_contact_by_emp_id(emp_id)
             contact.email = new_email
+
 
     def edit_street_and_no(self, emp_id, new_adress):
         with self.session.begin():
             contact = self._search_contact_by_emp_id(emp_id)
             contact.street_and_no = new_adress
 
+
     def edit_flat_number(self, emp_id, new_flat_number):
         with self.session.begin():
             contact = self._search_contact_by_emp_id(emp_id)
             contact.flat_number = new_flat_number
+
 
     def edit_dept_name(self, dep_id, new_dept_name):
         with self.session.begin():
             dept = self._search_dept_by_id(dep_id)
             dept.dep_name = new_dept_name
 
+
     def edit_title_name(self, title_id, new_title_name):
         with self.session.begin():
             title = self._search_title_by_id(title_id)
             title.name = new_title_name
 
+
     def edit_title_dept(self, title_id, new_dept_id):
         with self.session.begin():
             title = self._search_title_by_id(title_id)
             title.department_id = new_dept_id
+
 
 
 
