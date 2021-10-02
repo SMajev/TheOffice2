@@ -41,6 +41,8 @@ class Database:
         flat_number = Column(Integer, nullable=True)
         emp = relationship('Employees', back_populates='contact')
 
+        def __repr__(self):
+            return f'\nPhone number: {self.phone_number}, Email: {self.email}\n Address: {self.street_and_no}, {self.flat_number}\n'
 
     class Salary(BASE):
         __tablename__ = 'salaries'
@@ -52,6 +54,8 @@ class Database:
         def __repr__(self):
             return f'salary_id'
 
+        def __repr__(self):
+            return f'Hours: {self.hours}, Per Hour: {self.per_hour}, Full salary: {self.full_salary}'
 
     class Departments(BASE):
         __tablename__ = 'departments'
@@ -80,10 +84,19 @@ class Database:
         self.session = Session()
 
 
-    def _add_object(self, object):
-        self.session.add(object)
-        self.session.commit()
 
+
+    def show_employe_data(self, emp_id):
+        employe = self._search_by_id(emp_id)
+        return employe
+
+    def show_employe_contact(self, emp_id):
+        contact = self._search_contact_by_emp_id(emp_id)
+        return contact
+
+    def show_employe_salary(self, emp_id):
+        salary = self._search_salary_by_emp_id(emp_id)
+        return salary
 
     def add_employe(self, name: str, surname: str, pesel: str,
                     birth_date=None, hire_date=None, department_id=None, title_id=None):
@@ -151,6 +164,12 @@ class Database:
         df = self._get_data_frame(table_name, idx)
         df.to_csv(file_name)
 
+
+    def edit_emp_name(self, emp_id: int, new_name: str):
+        with self.session.begin():
+            employe = self._search_by_id(emp_id)
+            employe.emp_name = new_name
+            
 
     def edit_emp_surname(self, emp_id: int, new_surname: str):
         with self.session.begin():
@@ -238,6 +257,9 @@ class Database:
             except:
                 print('Nie ma takiego rekordu')
 
+    def _add_object(self, object):
+        self.session.add(object)
+        self.session.commit()
 
     def _get_data_frame(self, table_name, idx):
         df = pd.read_sql_table(table_name, self.engine, index_col=idx)
