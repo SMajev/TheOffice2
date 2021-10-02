@@ -30,7 +30,7 @@ class Database:
         title = relationship('Titles', back_populates='emp')
 
         def __repr__(self):
-            return f'\n\n\nID: {self.emp_id}, Name: {self.emp_name}, Surname: {self.emp_surname},\n       Pesel:{self.pesel}\n\n\n'
+            return f'\nID: {self.emp_id}, Name: {self.emp_name}, Surname: {self.emp_surname},\n       Pesel:{self.pesel}\n'
 
     class Contacts(BASE):
         __tablename__ = 'contacts'
@@ -55,7 +55,7 @@ class Database:
             return f'salary_id'
 
         def __repr__(self):
-            return f'Hours: {self.hours}, Per Hour: {self.per_hour}, Full salary: {self.full_salary}'
+            return f'\nHours: {self.hours}, Per Hour: {self.per_hour}, Full salary: {self.full_salary}\n'
 
     class Departments(BASE):
         __tablename__ = 'departments'
@@ -83,8 +83,9 @@ class Database:
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
-
-
+    def get_employees_df(self):
+        df = pd.read_sql_table('employees', self.engine, index_col='emp_id')
+        return df
 
     def show_employe_data(self, emp_id):
         employe = self._search_by_id(emp_id)
@@ -108,6 +109,9 @@ class Database:
         )        
         self._add_object(new_employe)
 
+    def show_all_deparments(self):
+        df = pd.read_sql_table('departments', self.engine, index_col='department_id')
+        print(df)
 
     def add_department(self, dep_name: str):
         new_department = self.Departments(dep_name=dep_name)
@@ -120,15 +124,14 @@ class Database:
 
 
     def edit_emp_name(self, emp_id: int, new_name: str):
-        with self.session.begin():
-            employe = self._search_by_id(emp_id)
-            employe.emp_name = new_name
+        employe = self._search_by_id(emp_id)
+        employe.emp_name = new_name
 
 
     def add_hour_to_salary(self, emp_id: int, number_of_hours: int):
-        with self.session.begin():
-            salary = self._search_salary_by_emp_id(emp_id)
-            salary.hours += number_of_hours
+        salary = self._search_salary_by_emp_id(emp_id)
+        salary.hours += number_of_hours
+        self.session.commit()
 
 
     def edit_per_hour_value(self, emp_id: int, value):
@@ -154,10 +157,9 @@ class Database:
 
 
     def count_full_salary_for_everyone(self):        
-        with self.session.begin():
-            salaries = self._get_every_salary()
-            for salary in salaries:
-                salary.full_salary = salary.hours * salary.per_hour
+        salaries = self._get_every_salary()
+        for salary in salaries:
+            salary.full_salary = salary.hours * salary.per_hour
 
 
     def save_data_to_csv(self,  table_name, file_name, idx):
@@ -166,33 +168,29 @@ class Database:
 
 
     def edit_emp_name(self, emp_id: int, new_name: str):
-        with self.session.begin():
-            employe = self._search_by_id(emp_id)
-            employe.emp_name = new_name
-            
+        employe = self._search_by_id(emp_id)
+        employe.emp_name = new_name
+        self.session.commit()          
 
     def edit_emp_surname(self, emp_id: int, new_surname: str):
-        with self.session.begin():
-            employe = self._search_by_id(emp_id)
-            employe.emp_surname = new_surname
-
+        employe = self._search_by_id(emp_id)
+        employe.emp_surname = new_surname
+        self.session.commit()
 
     def edit_emp_pesel(self, emp_id:int, new_pesel: str):
-        with self.session.begin():
-            employe = self._search_by_id(emp_id)
-            employe.pesel = new_pesel
-
+        employe = self._search_by_id(emp_id)
+        employe.pesel = new_pesel
+        self.session.commit()
 
     def edit_emp_birth_date(self, emp_id: int, new_birth_date: str):
-        with self.session.begin():
-            employe = self._search_by_id(emp_id)
-            employe.birth_date = new_birth_date
-
+        employe = self._search_by_id(emp_id)
+        employe.birth_date = new_birth_date
+        self.session.commit()
 
     def edit_emp_hire_date(self, emp_id: int, new_hire_date: str):
-        with self.session.begin():
-            employe = self._search_by_id(emp_id)
-            employe.hire_date = new_hire_date
+        employe = self._search_by_id(emp_id)
+        employe.hire_date = new_hire_date
+        self.session.commit()
 
 
     def edit_emp_department_id(self, emp_id: int, new_department_id: int):
@@ -232,9 +230,9 @@ class Database:
 
 
     def edit_dept_name(self, dep_id: int, new_dept_name: str):
-        with self.session.begin():
-            dept = self._search_dept_by_id(dep_id)
-            dept.dep_name = new_dept_name
+        dept = self._search_dept_by_id(dep_id)
+        dept.dep_name = new_dept_name
+        self.session.commit()
 
 
     def edit_title_name(self, title_id: int, new_title_name: str):
