@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import datetime
 import csv
 import pandas as pd
-
+import re
 
 class Database:
     BASE = declarative_base()
@@ -22,15 +22,16 @@ class Database:
         hire_date = Column(Date, nullable=True)
         contact_id = Column(Integer, ForeignKey('contacts.contact_id'))
         contact = relationship('Contacts', back_populates='emp')
-        salary_id = Column(Integer(), ForeignKey('salaries.salary_id'))
+        salary_id = Column(Integer, ForeignKey('salaries.salary_id'))
         salary = relationship('Salary', back_populates='emp')
-        department_id = Column(Integer(), ForeignKey('departments.department_id'))
+        department_id = Column(Integer, ForeignKey('departments.department_id'))
         department = relationship('Departments', back_populates='emp')
-        title_id = Column(Integer(), ForeignKey('titles.title_id'))
+        title_id = Column(Integer, ForeignKey('titles.title_id'))
         title = relationship('Titles', back_populates='emp')
+        
 
         def __repr__(self):
-            return f'\nID: {self.emp_id}, Name: {self.emp_name}, Surname: {self.emp_surname},\n       Pesel:{self.pesel}\n'
+            return f'\nID: {self.emp_id}, Name: {self.emp_name}, Surname: {self.emp_surname},\n       Pesel: {self.pesel}\n'
 
     class Contacts(BASE):
         __tablename__ = 'contacts'
@@ -42,7 +43,7 @@ class Database:
         emp = relationship('Employees', back_populates='contact')
 
         def __repr__(self):
-            return f'\nPhone number: {self.phone_number}, Email: {self.email}\n Address: {self.street_and_no}, {self.flat_number}\n'
+            return f'\nPhone number: {self.phone_number}, Email: {self.email}\nAddress: {self.street_and_no}, {self.flat_number}\n'
 
     class Salary(BASE):
         __tablename__ = 'salaries'
@@ -83,6 +84,20 @@ class Database:
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
+
+    def find_employe_by_name(self, value):
+        emp = self.session.query(self.Employees).filter(self.Employees.emp_name == value).all()
+        return emp
+
+    def find_employe_by_surname(self, value): 
+        emp = self.session.query(self.Employees).filter(self.Employees.emp_surname == value).all()
+        return emp
+
+    def find_employe_by_pesel(self, value):
+        emp = self.session.query(self.Employees).filter(self.Employees.pesel == value).all()
+        return emp
+
+
     def get_employees_df(self):
         df = pd.read_sql_table('employees', self.engine, index_col='emp_id')
         return df
@@ -122,22 +137,26 @@ class Database:
         new_title = self.Titles(title_name=title_name, department_id=department_id)
         self._add_object(new_title)
 
+    def show_all_titles(self):
+        df = pd.read_sql_table('titles', self.engine)
+        print(df)
 
     def edit_emp_name(self, emp_id: int, new_name: str):
         employe = self._search_by_id(emp_id)
         employe.emp_name = new_name
+        self._add_object(employe)
 
 
     def add_hour_to_salary(self, emp_id: int, number_of_hours: int):
         salary = self._search_salary_by_emp_id(emp_id)
         salary.hours += number_of_hours
-        self.session.commit()
+        self._add_object(salary)
 
 
     def edit_per_hour_value(self, emp_id: int, value):
-        with self.session.begin():
-            salary = self._search_salary_by_emp_id(emp_id)
-            salary.per_hour = value
+        salary = self._search_salary_by_emp_id(emp_id)
+        salary.per_hour = value
+        self._add_object(salary)
 
 
     def show_all_employees(self):
@@ -146,14 +165,13 @@ class Database:
 
 
     def monthly_reset(self):
-        with self.session.begin():
-            salaries = self._get_every_salary()
-            print(salaries)
-            self.save_data_to_csv('salaries', 'full_salary.csv', 'salary_id')
-            for salary in salaries:
-                print(salary)
-                salary.hours = 0
-                salary.full_salary = 0
+        salaries = self._get_every_salary()
+        print(salaries)
+        self.save_data_to_csv('salaries', 'full_salary.csv', 'salary_id')
+        for salary in salaries:
+            print(salary)
+            salary.hours = 0
+            salary.full_salary = 0
 
 
     def count_full_salary_for_everyone(self):        
@@ -170,90 +188,93 @@ class Database:
     def edit_emp_name(self, emp_id: int, new_name: str):
         employe = self._search_by_id(emp_id)
         employe.emp_name = new_name
-        self.session.commit()          
+        self._add_object(employe)       
 
     def edit_emp_surname(self, emp_id: int, new_surname: str):
         employe = self._search_by_id(emp_id)
         employe.emp_surname = new_surname
-        self.session.commit()
+        self._add_object(employe)
 
     def edit_emp_pesel(self, emp_id:int, new_pesel: str):
         employe = self._search_by_id(emp_id)
         employe.pesel = new_pesel
-        self.session.commit()
+        self._add_object(employe)
 
     def edit_emp_birth_date(self, emp_id: int, new_birth_date: str):
         employe = self._search_by_id(emp_id)
         employe.birth_date = new_birth_date
-        self.session.commit()
+        self._add_object(employe)
 
     def edit_emp_hire_date(self, emp_id: int, new_hire_date: str):
         employe = self._search_by_id(emp_id)
         employe.hire_date = new_hire_date
-        self.session.commit()
+        self._add_object(employe)
 
 
     def edit_emp_department_id(self, emp_id: int, new_department_id: int):
-        with self.session.begin():
-            employe = self._search_by_id(emp_id)
-            employe.department_id = new_department_id
+        employe = self._search_by_id(emp_id)
+        employe.department_id = int(new_department_id)
+        self._add_object(employe)
 
 
     def edit_emp_title_id(self, emp_id: int, new_title_id: int):
-        with self.session.begin():
-            employe = self._search_by_id(emp_id)
-            employe.department_id = new_title_id
-
+        employe = self._search_by_id(emp_id)
+        employe.title_id = int(new_title_id)
+        self._add_object(employe)
 
     def edit_phone_number(self, emp_id: int, new_phone_number: str):
-        with self.session.begin():
-            contact = self._search_contact_by_emp_id(emp_id)
-            contact.phone_number = new_phone_number
-
+        contact = self._search_contact_by_emp_id(emp_id)
+        contact.phone_number = new_phone_number
+        self._add_object(contact)
 
     def edit_mail(self, emp_id: int, new_email: str):
-        with self.session.begin():
-            contact = self._search_contact_by_emp_id(emp_id)
-            contact.email = new_email
+        new_email = self._check_email(new_email)
+        contact = self._search_contact_by_emp_id(emp_id)
+        contact.email = new_email
+        self._add_object(contact)
 
 
     def edit_street_and_no(self, emp_id: int, new_adress: str):
-        with self.session.begin():
-            contact = self._search_contact_by_emp_id(emp_id)
-            contact.street_and_no = new_adress
-
+        contact = self._search_contact_by_emp_id(emp_id)
+        contact.street_and_no = new_adress
+        self._add_object(contact)
 
     def edit_flat_number(self, emp_id: int, new_flat_number: str):
-        with self.session.begin():
-            contact = self._search_contact_by_emp_id(emp_id)
-            contact.flat_number = new_flat_number
-
+        contact = self._search_contact_by_emp_id(emp_id)
+        contact.flat_number = new_flat_number
+        self._add_object(contact)
 
     def edit_dept_name(self, dep_id: int, new_dept_name: str):
         dept = self._search_dept_by_id(dep_id)
         dept.dep_name = new_dept_name
-        self.session.commit()
+        self._add_object(dept)
 
 
     def edit_title_name(self, title_id: int, new_title_name: str):
-        with self.session.begin():
-            title = self._search_title_by_id(title_id)
-            title.name = new_title_name
+        title = self._search_title_by_id(title_id)
+        title.name = new_title_name
+        self._add_object(title)
 
-
-    def edit_title_dept(self, title_id: int, new_dept_id: int):
-        with self.session.begin():
-            title = self._search_title_by_id(title_id)
-            title.department_id = new_dept_id
+    def edit_title_dept(self, title_id: int, new_dept_id: int):    
+        title = self._search_title_by_id(title_id)
+        title.department_id = new_dept_id
+        self._add_object(title)
 
     def delete_employee(self, emp_id):
-        with self.session.begin():
-            try:
-                self.session.delete(self._search_salary_by_emp_id(emp_id))
-                self.session.delete(self._search_contact_by_emp_id(emp_id))
-                self.session.delete(self._search_by_id(emp_id))
-            except:
-                print('Nie ma takiego rekordu')
+        try:
+            self.session.delete(self._search_salary_by_emp_id(emp_id))
+            self.session.delete(self._search_contact_by_emp_id(emp_id))
+            self.session.delete(self._search_by_id(emp_id))
+        except:
+            print('Nie ma takiego rekordu')
+
+    def _check_email(self, email):
+        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        if re.fullmatch(regex, email):
+            return email
+        
+        else:
+            print('Invalid email!')
 
     def _add_object(self, object):
         self.session.add(object)
